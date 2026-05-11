@@ -149,7 +149,7 @@ if (file) {
     formData.append("file", file);
 
     const uploadResponse = await fetch(
-        "http://127.0.0.1:8000/upload-resume",
+        "https://ai-interview-agent-9h21.onrender.com/upload-resume",
         {
             method: "POST",
             body: formData
@@ -166,7 +166,7 @@ if (file) {
 document.getElementById("interviewerType").value;
 
             const response = await fetch(
-                "http://127.0.0.1:8000/generate-questions",
+                "https://ai-interview-agent-9h21.onrender.com/generate-questions",
                 {
                     method: "POST",
                     headers: {
@@ -197,7 +197,7 @@ document.getElementById("interviewerType").value;
                 document.getElementById("answer").value;
 
             const response = await fetch(
-                "http://127.0.0.1:8000/evaluate-answer",
+                "https://ai-interview-agent-9h21.onrender.com/evaluate-answer",
                 {
                     method: "POST",
                     headers: {
