@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AI Interview Assistant</title>
+    <style>
+
+body {
+    background-color: #0f172a;
+    color: white;
+    font-family: Arial;
+    padding: 40px;
+}
+
+h1 {
+    color: #38bdf8;
+}
+
+textarea,
+input {
+    width: 80%;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+}
+
+button {
+    background-color: #38bdf8;
+    color: black;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #0ea5e9;
+}
+
+#output,
+#feedback {
+    background-color: #1e293b;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    white-space: pre-wrap;
+}
+
+</style>
+</head>
+
+<body>
+
+    <h1>AI Interview Assistant</h1>
+    <input type="file" id="resumeFile">
+    <input type="file" id="resumeFile">
+
+<br><br>
+    <textarea id="resume" rows="10" cols="50"
+        placeholder="Paste your resume here"></textarea>
+
+    <br><br>
+
+    <input type="text" id="role" placeholder="Enter role">
+    <br><br>
+
+<select id="interviewerType">
+
+    <option value="Friendly HR">
+        Friendly HR
+    </option>
+
+    <option value="Technical Interviewer">
+        Technical Interviewer
+    </option>
+
+    <option value="Strict FAANG Interviewer">
+        Strict FAANG Interviewer
+    </option>
+
+    <option value="Startup Founder">
+        Startup Founder
+    </option>
+
+</select>
+
+    <br><br>
+
+    <button onclick="generateQuestions()">
+        Generate Questions
+    </button>
+
+    <h2>Questions:</h2>
+    <button onclick="speakQuestions()">
+    🔊 Read Questions
+</button>
+
+    <div id="output"></div>
+    <p id="loading" style="display:none;">
+    AI is generating questions...
+</p>
+
+    <hr>
+
+    <h2>Answer Evaluation</h2>
+
+    <input type="text" id="question"
+        placeholder="Enter interview question">
+
+    <br><br>
+
+    <textarea id="answer" rows="8" cols="50"
+        placeholder="Type your answer"></textarea>
+    <br><br>
+
+    <button onclick="startVoiceInput()">
+    🎤 Speak Answer
+</button>
+    <br><br>
+
+    <button onclick="evaluateAnswer()">
+        Evaluate Answer
+    </button>
+
+    <h2>Feedback:</h2>
+
+    <div id="feedback"></div>
+
+    <script>
+
+        async function generateQuestions() {
+            document.getElementById("loading").style.display =
+    "block";
+
+            let resume =
+document.getElementById("resume").value;
+
+const file =
+document.getElementById("resumeFile").files[0];
+
+if (file) {
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    const uploadResponse = await fetch(
+        "http://127.0.0.1:8000/upload-resume",
+        {
+            method: "POST",
+            body: formData
+        }
+    );
+
+    const uploadData =
+        await uploadResponse.json();
+
+    resume = uploadData.resume_text;
+}
+            const role = document.getElementById("role").value;
+            const interviewerType =
+document.getElementById("interviewerType").value;
+
+            const response = await fetch(
+                "http://127.0.0.1:8000/generate-questions",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                    resume_text: resume,
+                    role: role,
+                    interviewer_type: interviewerType
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            document.getElementById("output").innerText =
+                data.questions;
+                document.getElementById("loading").style.display =
+    "none";
+        }
+
+        async function evaluateAnswer() {
+
+            const question =
+                document.getElementById("question").value;
+
+            const answer =
+                document.getElementById("answer").value;
+
+            const response = await fetch(
+                "http://127.0.0.1:8000/evaluate-answer",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        answer: answer
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            document.getElementById("feedback").innerText =
+                data.feedback;
+        }
+        function startVoiceInput() {
+
+    const recognition =
+        new webkitSpeechRecognition();
+
+    recognition.lang = "en-US";
+
+    recognition.onresult = function(event) {
+
+        const transcript =
+            event.results[0][0].transcript;
+
+        document.getElementById("answer").value =
+            transcript;
+    };
+
+    recognition.start();
+}
+function speakQuestions() {
+
+    const text =
+        document.getElementById("output").innerText;
+
+    const speech =
+        new SpeechSynthesisUtterance(text);
+
+    speech.lang = "en-US";
+
+    window.speechSynthesis.speak(speech);
+}
+
+    </script>
+
+</body>
+
+</html>
